@@ -1,0 +1,185 @@
+.record-brand-layout {
+  background: #fbf8f4;
+}
+
+.record-brand-page {
+  background: #fbf8f4;
+  padding: 0 20px;
+}
+
+.record-brand-page__search-section {
+  padding-top: 2px;
+}
+
+.record-brand-page__search-box {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  box-sizing: border-box;
+  border: 1px solid #eadfd4;
+  border-radius: 9px;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(74, 45, 29, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #b09a88;
+}
+
+.record-brand-page__search-box input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #3b281c;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -0.2px;
+}
+
+.record-brand-page__search-box input::placeholder {
+  color: #b9aa9b;
+}
+
+.record-brand-page__section {
+  padding-top: 16px;
+}
+
+.record-brand-page__section-title {
+  margin: 1px 0 13px 13px;
+  color: #1f140e;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.3px;
+}
+
+.record-brand-page__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.record-brand-card {
+  height: 106px;
+  padding: 15px 6px 12px;
+  box-sizing: border-box;
+  border: 0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 7px 14px rgba(74, 45, 29, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.record-brand-card:active {
+  transform: scale(0.98);
+}
+
+.record-brand-card__image-wrap {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: #f1e8dc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.record-brand-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.record-brand-card__fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background: #f1e8dc;
+  color: #7a5134;
+  font-size: 24px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.record-brand-card__fallback--yellow::before,
+.record-brand-card__fallback--red::before,
+.record-brand-card__fallback--orange::before,
+.record-brand-card__fallback--blue::before {
+  content: "";
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: block;
+}
+
+.record-brand-card__fallback--yellow::before {
+  background: #ffca2f;
+}
+
+.record-brand-card__fallback--red::before {
+  background: #ff4139;
+}
+
+.record-brand-card__fallback--orange::before {
+  background: #ff920f;
+}
+
+.record-brand-card__fallback--blue::before {
+  background: #1678d7;
+}
+
+.record-brand-card__fallback--coffee {
+  font-size: 25px;
+}
+
+.record-brand-card__fallback--cat {
+  font-size: 25px;
+}
+
+.record-brand-card__fallback--lightning {
+  color: #f0a71a;
+  font-size: 28px;
+}
+
+.record-brand-card__fallback--tea,
+.record-brand-card__fallback--dessert,
+.record-brand-card__fallback--food {
+  font-size: 24px;
+}
+
+.record-brand-card__name {
+  width: 100%;
+  margin-top: 10px;
+  color: #5b3b27;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.25px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.record-brand-page__message {
+  margin: 28px 0 0;
+  color: #8d7b6d;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.record-brand-page__message--error {
+  color: #b65c4d;
+}

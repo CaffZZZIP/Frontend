@@ -1,0 +1,29 @@
+.app-root {
+  width: 100%;
+  min-height: 100dvh;
+  background: #eee8df;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+.app-shell {
+  width: 100%;
+  max-width: 402px;
+  min-height: 100dvh;
+  background: #ffffff;
+  position: relative;
+  overflow-x: hidden;
+}
+
+@media (min-width: 768px) {
+  .app-root {
+    align-items: flex-start;
+  }
+
+  .app-shell {
+    width: 402px;
+    min-height: 874px;
+    box-shadow: 0 0 28px rgba(0, 0, 0, 0.12);
+  }
+}

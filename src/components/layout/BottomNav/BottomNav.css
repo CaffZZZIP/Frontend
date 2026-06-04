@@ -1,0 +1,48 @@
+.bottom-nav {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: calc(40px + env(safe-area-inset-bottom));
+  height: 64px;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  background: rgba(255, 253, 250, 0.96);
+  border: 1px solid #eee3d9;
+  border-radius: 26px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  z-index: 30;
+  box-shadow: 0 8px 28px rgba(82, 55, 34, 0.12);
+  backdrop-filter: blur(10px);
+}
+
+.bottom-nav__item {
+  min-width: 0;
+  color: #3e3028;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  border-radius: 20px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav__item--active {
+  color: #8a5a25;
+  background: #f8f0e7;
+}
+
+.bottom-nav__icon {
+  width: 23px;
+  height: 23px;
+  flex: 0 0 auto;
+}
+
+.bottom-nav__label {
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.25px;
+}

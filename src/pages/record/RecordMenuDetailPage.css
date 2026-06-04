@@ -1,0 +1,321 @@
+.record-detail-layout {
+  background: #fbf8f4;
+}
+
+.record-detail-page {
+  background: #fbf8f4;
+  padding: 4px 20px 108px;
+}
+
+.record-detail-menu-card {
+  min-height: 108px;
+  padding: 20px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 16px rgba(74, 45, 29, 0.07);
+  display: flex;
+  align-items: center;
+}
+
+.record-detail-menu-card__image-wrap {
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+  border-radius: 12px;
+  background: #f1e8dc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.record-detail-menu-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.record-detail-menu-card__fallback {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.record-detail-menu-card__content {
+  min-width: 0;
+  margin-left: 17px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.record-detail-menu-card__content strong {
+  color: #1f140e;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.55px;
+}
+
+.record-detail-menu-card__content span {
+  color: #b19a87;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+.record-detail-info-card {
+  margin-top: 14px;
+  padding: 19px 18px 18px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 16px rgba(74, 45, 29, 0.07);
+}
+
+.record-detail-info-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.record-detail-info-card__label {
+  color: #b5967d;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.4px;
+}
+
+.record-detail-info-card__amount-row {
+  margin-top: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.record-detail-info-card__amount {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.record-detail-info-card__amount strong {
+  color: #0f0b08;
+  font-size: 42px;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -1.6px;
+}
+
+.record-detail-info-card__amount span {
+  color: #9d8674;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.record-detail-info-card__badge {
+  height: 27px;
+  padding: 0 10px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.record-detail-info-card__badge--safe {
+  background: #e8f8f0;
+  color: #299b5c;
+}
+
+.record-detail-info-card__badge--warning {
+  background: #fff5d9;
+  color: #b98413;
+}
+
+.record-detail-info-card__badge--danger {
+  background: #ffe8e4;
+  color: #c2503f;
+}
+
+.record-detail-info-card__progress {
+  width: 100%;
+  height: 19px;
+  margin-top: 15px;
+  border-radius: 999px;
+  background: #e5f3ec;
+  overflow: hidden;
+}
+
+.record-detail-info-card__progress span {
+  height: 100%;
+  border-radius: 999px;
+  background: #43c99a;
+  display: block;
+  transition: width 0.2s ease;
+}
+
+.record-detail-info-card__summary {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.record-detail-info-card__summary strong {
+  color: #38b978;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.record-detail-info-card__summary span {
+  color: #7c5638;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: -0.25px;
+}
+
+.record-detail-info-card__guide {
+  margin: 13px 0 0;
+  padding: 13px 14px;
+  border-radius: 10px;
+  background: #fbf7f2;
+  color: #7b6656;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.65;
+  letter-spacing: -0.25px;
+}
+
+.record-detail-input-card {
+  margin-top: 14px;
+  padding: 18px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 8px 16px rgba(74, 45, 29, 0.07);
+}
+
+.record-detail-input-card h2 {
+  margin: 0 0 14px;
+  color: #1f140e;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.record-detail-input-card__time {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.record-detail-input-card__time input {
+  width: 145px;
+  height: 40px;
+  border: 1px solid #dfc7b2;
+  border-radius: 9px;
+  background: #fffdfb;
+  color: #130b06;
+  font-size: 21px;
+  font-weight: 1000;
+  text-align: center;
+  outline: 0;
+  box-sizing: border-box;
+}
+
+.record-detail-input-card__time span {
+  color: #9c714b;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.record-detail-input-card__quantity-row {
+  margin-top: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.record-detail-input-card__quantity-row > span {
+  color: #1f140e;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.record-detail-input-card__quantity-control {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+}
+
+.record-detail-input-card__quantity-control button {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #d9b991;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #1f140e;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.record-detail-input-card__quantity-control strong {
+  min-width: 15px;
+  color: #1f140e;
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.record-detail-page__submit-area {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  width: min(360px, calc(100% - 40px));
+  transform: translateX(-50%);
+  z-index: 20;
+}
+
+.record-detail-page__submit-button {
+  width: 100%;
+  height: 56px;
+  border: 0;
+  border-radius: 13px;
+  background: #b68d5d;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: -0.4px;
+  box-shadow: 0 8px 20px rgba(74, 45, 29, 0.17);
+  cursor: pointer;
+}
+
+.record-detail-page__submit-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
+.record-detail-page__message {
+  margin: 28px 0 0;
+  color: #8d7b6d;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.record-detail-page__message--error {
+  color: #b65c4d;
+}
+
+@media (min-width: 768px) {
+  .record-detail-page__submit-area {
+    width: 360px;
+  }
+}

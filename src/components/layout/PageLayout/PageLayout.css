@@ -1,0 +1,45 @@
+.page-layout {
+  width: 100%;
+  min-height: 100dvh;
+  background: #ffffff;
+}
+
+.page-layout--screen {
+  height: 100dvh;
+  min-height: 100dvh;
+  color: #2d2018;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-shell .page-layout {
+  min-height: 100dvh;
+}
+
+.app-shell .page-layout--screen {
+  min-height: 100%;
+}
+
+.page-layout__content {
+  width: 100%;
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.page-layout__content::-webkit-scrollbar {
+  display: none;
+}
+
+.page-layout--with-header .page-layout__content {
+  padding-top: 14px;
+}
+
+.page-layout--with-bottom-nav .page-layout__content {
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}

@@ -1,0 +1,86 @@
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-content {
+  width: 100%;
+  padding: 0 45px;
+  transform: translateY(14px);
+}
+
+.login-logo-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 49px;
+}
+
+.login-logo-image {
+  width: 92px;
+  height: 92px;
+  object-fit: contain;
+  margin-bottom: 12px;
+}
+
+.login-title {
+  margin: 0;
+  color: #1f1f1f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 31px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.7px;
+}
+
+.login-subtitle {
+  margin: 15px 0 0;
+  color: #a68d7d;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 5px;
+}
+
+.kakao-login-button {
+  width: 100%;
+  height: 57px;
+  border: 0;
+  border-radius: 13px;
+  background: #fee500;
+  color: #201500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  box-shadow: 0 10px 18px rgba(254, 229, 0, 0.22);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.kakao-login-button:active {
+  transform: translateY(1px);
+}
+
+.kakao-icon {
+  width: 22px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+  fill: #3a2415;
+  transform: translateY(1px);
+}
+
+.login-policy-text {
+  margin: 24px 0 0;
+  color: #b29a89;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.8;
+  letter-spacing: 0.8px;
+}
