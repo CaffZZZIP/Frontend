@@ -17,6 +17,8 @@ import {
 import "./HomePage.css";
 
 const ROUTINE_STORAGE_KEY = "caffzzzip-selected-routine-type";
+const ROUTINE_LABELS_STORAGE_KEY = "caffzzzip-routine-labels";
+const ROUTINE_DATA_STORAGE_KEY = "caffzzzip-routine-data";
 
 const defaultRoutineNames: Record<RoutineType, string> = {
   WEEKDAY: "평소",
@@ -44,9 +46,11 @@ const defaultQuote: DailyQuoteResponse = {
 function HomePage() {
   const navigate = useNavigate();
 
-  const [selectedRoutine, setSelectedRoutine] = useState<RoutineType>("WEEKDAY");
-  const [routineLabels, setRoutineLabels] = useState<Record<RoutineType, string>>(defaultRoutineNames);
-  const [routine, setRoutine] = useState<MainRoutineResponse>(defaultRoutine);
+  const [selectedRoutine, setSelectedRoutine] = useState<RoutineType>(() => getInitialRoutineType());
+  const [routineLabels, setRoutineLabels] = useState<Record<RoutineType, string>>(() =>
+    getStoredRoutineLabels()
+  );
+  const [routine, setRoutine] = useState<MainRoutineResponse>(() => getInitialRoutine());
   const [summary, setSummary] = useState<CaffeineSummaryResponse>(defaultSummary);
   const [quote, setQuote] = useState<DailyQuoteResponse>(defaultQuote);
   const [intakes, setIntakes] = useState<IntakePreviewItem[]>([]);
@@ -59,6 +63,7 @@ function HomePage() {
     setErrorMessage("");
 
     try {
+      const storedRoutine = getStoredRoutineType();
       const openedRoutine = normalizeRoutine(await getMainRoutine(), defaultRoutineNames.WEEKDAY);
 
       const weekdayRoutine = normalizeRoutine(
@@ -71,12 +76,8 @@ function HomePage() {
         defaultRoutineNames.WEEKEND
       );
 
-      const storedRoutine = getStoredRoutineType();
-
       const targetRoutine =
-        inferRoutineType(openedRoutine, weekdayRoutine, weekendRoutine) ||
-        storedRoutine ||
-        "WEEKDAY";
+        storedRoutine || inferRoutineType(openedRoutine, weekdayRoutine, weekendRoutine) || "WEEKDAY";
 
       await selectRoutineMode(targetRoutine);
 
@@ -87,17 +88,24 @@ function HomePage() {
       ]);
 
       const currentRoutine = targetRoutine === "WEEKDAY" ? weekdayRoutine : weekendRoutine;
-
-      setRoutineLabels({
+      const nextRoutineLabels = {
         WEEKDAY: weekdayRoutine.routineName || defaultRoutineNames.WEEKDAY,
         WEEKEND: weekendRoutine.routineName || defaultRoutineNames.WEEKEND,
-      });
+      };
+      const nextRoutineData: Partial<Record<RoutineType, MainRoutineResponse>> = {
+        WEEKDAY: weekdayRoutine,
+        WEEKEND: weekendRoutine,
+      };
+
+      setRoutineLabels(nextRoutineLabels);
       setSelectedRoutine(targetRoutine);
       setRoutine(currentRoutine);
       setSummary(summaryData || defaultSummary);
       setQuote(quoteData || defaultQuote);
       setIntakes(Array.isArray(intakeData) ? intakeData : []);
       setStoredRoutineType(targetRoutine);
+      setStoredRoutineLabels(nextRoutineLabels);
+      setStoredRoutineDataMap(nextRoutineData);
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : "메인 정보를 불러오지 못했어요.");
     } finally {
@@ -133,10 +141,18 @@ function HomePage() {
 
     const previousRoutine = selectedRoutine;
     const previousRoutineData = routine;
+    const cachedRoutine = getStoredRoutineDataMap()[routineType];
 
     setSelectedRoutine(routineType);
+    setStoredRoutineType(routineType);
     setIsRoutineSaving(true);
     setErrorMessage("");
+
+    if (cachedRoutine) {
+      setRoutine(
+        normalizeRoutine(cachedRoutine, routineLabels[routineType] || defaultRoutineNames[routineType])
+      );
+    }
 
     try {
       await selectRoutineMode(routineType);
@@ -152,16 +168,23 @@ function HomePage() {
         routineData,
         routineLabels[routineType] || defaultRoutineNames[routineType]
       );
+      const nextRoutineLabels = {
+        ...routineLabels,
+        [routineType]: normalizedRoutine.routineName || routineLabels[routineType],
+      };
+      const nextRoutineData = {
+        ...getStoredRoutineDataMap(),
+        [routineType]: normalizedRoutine,
+      };
 
       setRoutine(normalizedRoutine);
-      setRoutineLabels((prev) => ({
-        ...prev,
-        [routineType]: normalizedRoutine.routineName || prev[routineType],
-      }));
+      setRoutineLabels(nextRoutineLabels);
       setSummary(summaryData || defaultSummary);
       setQuote(quoteData || defaultQuote);
       setIntakes(Array.isArray(intakeData) ? intakeData : []);
       setStoredRoutineType(routineType);
+      setStoredRoutineLabels(nextRoutineLabels);
+      setStoredRoutineDataMap(nextRoutineData);
     } catch (error) {
       setSelectedRoutine(previousRoutine);
       setRoutine(previousRoutineData);
@@ -363,8 +386,20 @@ function normalizeText(value?: string) {
   return (value || "").trim();
 }
 
+function getInitialRoutineType(): RoutineType {
+  return getStoredRoutineType() || "WEEKDAY";
+}
+
+function getInitialRoutine(): MainRoutineResponse {
+  const routineType = getInitialRoutineType();
+  const labels = getStoredRoutineLabels();
+  const routines = getStoredRoutineDataMap();
+
+  return normalizeRoutine(routines[routineType], labels[routineType] || defaultRoutineNames[routineType]);
+}
+
 function getStoredRoutineType(): RoutineType | null {
-  const value = localStorage.getItem(ROUTINE_STORAGE_KEY);
+  const value = getStorageItem(ROUTINE_STORAGE_KEY);
 
   if (value === "WEEKDAY" || value === "WEEKEND") {
     return value;
@@ -374,7 +409,119 @@ function getStoredRoutineType(): RoutineType | null {
 }
 
 function setStoredRoutineType(routineType: RoutineType) {
-  localStorage.setItem(ROUTINE_STORAGE_KEY, routineType);
+  setStorageItem(ROUTINE_STORAGE_KEY, routineType);
+}
+
+function getStoredRoutineLabels(): Record<RoutineType, string> {
+  const parsed = parseStorageJson(ROUTINE_LABELS_STORAGE_KEY);
+
+  if (!parsed || typeof parsed !== "object") {
+    return defaultRoutineNames;
+  }
+
+  const labels = parsed as Partial<Record<RoutineType, unknown>>;
+
+  return {
+    WEEKDAY:
+      typeof labels.WEEKDAY === "string" && labels.WEEKDAY.trim()
+        ? labels.WEEKDAY.trim()
+        : defaultRoutineNames.WEEKDAY,
+    WEEKEND:
+      typeof labels.WEEKEND === "string" && labels.WEEKEND.trim()
+        ? labels.WEEKEND.trim()
+        : defaultRoutineNames.WEEKEND,
+  };
+}
+
+function setStoredRoutineLabels(labels: Record<RoutineType, string>) {
+  setStorageItem(ROUTINE_LABELS_STORAGE_KEY, JSON.stringify(labels));
+}
+
+function getStoredRoutineDataMap(): Partial<Record<RoutineType, MainRoutineResponse>> {
+  const parsed = parseStorageJson(ROUTINE_DATA_STORAGE_KEY);
+
+  if (!parsed || typeof parsed !== "object") {
+    return {};
+  }
+
+  const data = parsed as Partial<Record<RoutineType, unknown>>;
+  const weekdayRoutine = toStoredRoutine(data.WEEKDAY);
+  const weekendRoutine = toStoredRoutine(data.WEEKEND);
+  const result: Partial<Record<RoutineType, MainRoutineResponse>> = {};
+
+  if (weekdayRoutine) {
+    result.WEEKDAY = weekdayRoutine;
+  }
+
+  if (weekendRoutine) {
+    result.WEEKEND = weekendRoutine;
+  }
+
+  return result;
+}
+
+function setStoredRoutineDataMap(data: Partial<Record<RoutineType, MainRoutineResponse>>) {
+  setStorageItem(ROUTINE_DATA_STORAGE_KEY, JSON.stringify(data));
+}
+
+function toStoredRoutine(value: unknown): MainRoutineResponse | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const routineValue = value as Partial<Record<keyof MainRoutineResponse, unknown>>;
+
+  if (
+    typeof routineValue.routineName !== "string" ||
+    typeof routineValue.wakeTime !== "string" ||
+    typeof routineValue.sleepTime !== "string"
+  ) {
+    return null;
+  }
+
+  return {
+    routineName: routineValue.routineName,
+    wakeTime: routineValue.wakeTime,
+    sleepTime: routineValue.sleepTime,
+  };
+}
+
+function parseStorageJson(key: string) {
+  const value = getStorageItem(key);
+
+  if (!value) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+function getStorageItem(key: string) {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function setStorageItem(key: string, value: string) {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    return;
+  }
 }
 
 function formatTime(value?: string) {
