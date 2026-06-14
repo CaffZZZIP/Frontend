@@ -2,7 +2,7 @@
   position: absolute;
   left: 14px;
   right: 14px;
-  bottom: calc(35px + env(safe-area-inset-bottom));
+  bottom: calc(10px + env(safe-area-inset-bottom));
   height: 64px;
   padding: 6px 10px;
   box-sizing: border-box;
