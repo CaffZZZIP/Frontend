@@ -117,7 +117,11 @@ function MyPage() {
       navigate("/", { replace: true });
     } catch (error) {
       console.error(error);
-      alert("회원 탈퇴 중 오류가 발생했어요.");
+      const message =
+        error instanceof Error && error.message
+          ? error.message
+          : "회원 탈퇴 중 오류가 발생했어요.";
+      alert(message);
     }
   };
 
@@ -166,7 +170,10 @@ function MyPage() {
                   const stat = findStatByDay(stats, day.key);
                   const totalCaffeine = stat?.totalCaffeine || 0;
                   const riskLevel = stat?.riskLevel || "SAFE";
-                  const height = Math.max((totalCaffeine / maxCaffeine) * 100, totalCaffeine > 0 ? 14 : 4);
+                  const height = Math.max(
+                    (totalCaffeine / maxCaffeine) * 100,
+                    totalCaffeine > 0 ? 14 : 4
+                  );
 
                   return (
                     <div className="my-chart__item" key={day.key}>
