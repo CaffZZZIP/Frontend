@@ -5,8 +5,12 @@
       "destination": "http://52.79.54.46:8080/api/:path*"
     },
     {
+      "source": "/images/:path*",
+      "destination": "http://52.79.54.46:8080/images/:path*"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/"
+      "destination": "/index.html"
     }
   ]
 }

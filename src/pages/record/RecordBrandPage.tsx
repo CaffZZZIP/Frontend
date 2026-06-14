@@ -5,16 +5,20 @@ import PageLayout from "../../components/layout/PageLayout/PageLayout";
 import {
   getMenuBrands,
   getMenus,
+  resolveMenuImageUrl,
   type MenuBrand,
   type MenuItem,
 } from "../../api/menuApi";
 import "./RecordBrandPage.css";
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
-
 type BrandCard = {
   brand: string;
   imageUrl?: string;
+};
+
+type BrandVisual = {
+  label: string;
+  tone: string;
 };
 
 function RecordBrandPage() {
@@ -69,7 +73,9 @@ function RecordBrandPage() {
 
     return brands.filter((brandItem) => {
       const brandName = brandItem.brand.toLowerCase();
-      const matchedByBrand = brandName.includes(trimmedKeyword);
+      const displayName = getBrandDisplayName(brandItem.brand).toLowerCase();
+      const matchedByBrand =
+        brandName.includes(trimmedKeyword) || displayName.includes(trimmedKeyword);
 
       const matchedByMenu = menus.some((menu) => {
         return (
@@ -139,15 +145,11 @@ function RecordBrandPage() {
                   onClick={() => handleBrandClick(brandItem.brand)}
                 >
                   <span className="record-brand-card__image-wrap">
-                    {brandItem.imageUrl ? (
-                      <img src={brandItem.imageUrl} alt="" className="record-brand-card__image" />
-                    ) : (
-                      <span className={`record-brand-card__fallback record-brand-card__fallback--${visual.tone}`}>
-                        {visual.label}
-                      </span>
-                    )}
+                    <BrandImage imageUrl={brandItem.imageUrl} visual={visual} />
                   </span>
-                  <span className="record-brand-card__name">{getBrandDisplayName(brandItem.brand)}</span>
+                  <span className="record-brand-card__name">
+                    {getBrandDisplayName(brandItem.brand)}
+                  </span>
                 </button>
               );
             })}
@@ -158,31 +160,37 @@ function RecordBrandPage() {
   );
 }
 
+function BrandImage({ imageUrl, visual }: { imageUrl?: string; visual: BrandVisual }) {
+  const [failed, setFailed] = useState(false);
+
+  if (imageUrl && !failed) {
+    return (
+      <img
+        src={imageUrl}
+        alt=""
+        className="record-brand-card__image"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <span className={`record-brand-card__fallback record-brand-card__fallback--${visual.tone}`}>
+      {visual.label}
+    </span>
+  );
+}
+
 function normalizeBrands(data: MenuBrand[]): BrandCard[] {
   return data
     .map((item) => {
       return {
         brand: item.brand,
-        imageUrl: getImageUrl(item.imageUrl || item.brandImageUrl || item.logoUrl),
+        imageUrl: resolveMenuImageUrl(item.logoUrl || item.imageUrl || item.brandImageUrl),
       };
     })
     .filter((item) => item.brand);
-}
-
-function getImageUrl(imageUrl?: string | null) {
-  if (!imageUrl) {
-    return "";
-  }
-
-  if (
-    imageUrl.startsWith("http://") ||
-    imageUrl.startsWith("https://") ||
-    imageUrl.startsWith("blob:")
-  ) {
-    return imageUrl;
-  }
-
-  return `${BASE_URL}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
 }
 
 function getBrandDisplayName(brand: string) {

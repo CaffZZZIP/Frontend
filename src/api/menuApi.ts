@@ -1,5 +1,6 @@
 // 메뉴 선택 1~3페이지 api
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
+const IMAGE_BASE_URL = (import.meta.env.VITE_IMAGE_BASE_URL || BASE_URL || "").replace(/\/$/, "");
 
 type ApiResponse<T> = {
   code?: number;
@@ -95,7 +96,7 @@ function getAccessToken() {
   );
 }
 
-export function resolveMenuImageUrl(imageUrl?: string) {
+export function resolveMenuImageUrl(imageUrl?: string | null) {
   const trimmedUrl = imageUrl?.trim();
 
   if (!trimmedUrl) {
@@ -105,56 +106,27 @@ export function resolveMenuImageUrl(imageUrl?: string) {
   if (
     trimmedUrl.startsWith("http://") ||
     trimmedUrl.startsWith("https://") ||
-    trimmedUrl.startsWith("//") ||
     trimmedUrl.startsWith("data:") ||
     trimmedUrl.startsWith("blob:")
   ) {
     return trimmedUrl;
   }
 
-  return `${BASE_URL}${trimmedUrl.startsWith("/") ? "" : "/"}${trimmedUrl}`;
+  if (trimmedUrl.startsWith("//")) {
+    return `https:${trimmedUrl}`;
+  }
+
+  const normalizedPath = trimmedUrl.startsWith("/") ? trimmedUrl : `/${trimmedUrl}`;
+
+  if (!IMAGE_BASE_URL) {
+    return normalizedPath;
+  }
+
+  return `${IMAGE_BASE_URL}${normalizedPath}`;
 }
 
-export async function getAuthorizedImageObjectUrl(imageUrl?: string) {
-  const resolvedUrl = resolveMenuImageUrl(imageUrl);
-
-  if (!resolvedUrl) {
-    return undefined;
-  }
-
-  if (resolvedUrl.startsWith("data:") || resolvedUrl.startsWith("blob:")) {
-    return resolvedUrl;
-  }
-
-  try {
-    const headers = new Headers();
-    headers.set("Accept", "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8");
-
-    const accessToken = getAccessToken();
-
-    if (accessToken) {
-      headers.set("Authorization", `Bearer ${accessToken}`);
-    }
-
-    const response = await fetch(resolvedUrl, {
-      method: "GET",
-      headers,
-    });
-
-    if (!response.ok) {
-      return undefined;
-    }
-
-    const blob = await response.blob();
-
-    if (!blob.size) {
-      return undefined;
-    }
-
-    return URL.createObjectURL(blob);
-  } catch {
-    return undefined;
-  }
+export async function getAuthorizedImageObjectUrl(imageUrl?: string | null) {
+  return resolveMenuImageUrl(imageUrl);
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
