@@ -1,5 +1,6 @@
 .app-header {
   width: 100%;
+  height: 56px;
   box-sizing: border-box;
   flex: 0 0 auto;
   background: #ffffff;
@@ -12,13 +13,11 @@
 }
 
 .app-header--home {
-  height: 50px;
-  padding: 45px 22px 0;
+  padding: 0 22px;
 }
 
 .app-header--sub {
-  height: 50px;
-  padding: 45px 22px 0;
+  padding: 0 22px;
 }
 
 .app-header__brand {
