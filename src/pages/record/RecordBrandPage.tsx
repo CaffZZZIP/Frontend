@@ -3,13 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
 import {
-  getAuthorizedImageObjectUrl,
   getMenuBrands,
   getMenus,
   type MenuBrand,
   type MenuItem,
 } from "../../api/menuApi";
 import "./RecordBrandPage.css";
+
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://52.79.54.46:8080").replace(/\/$/, "");
 
 type BrandCard = {
   brand: string;
@@ -26,7 +27,6 @@ function RecordBrandPage() {
 
   useEffect(() => {
     let isMounted = true;
-    const objectUrls: string[] = [];
 
     const loadBrands = async () => {
       try {
@@ -36,27 +36,11 @@ function RecordBrandPage() {
         const [brandData, menuData] = await Promise.all([getMenuBrands(), getMenus()]);
         const normalizedBrands = normalizeBrands(brandData);
 
-        const brandsWithImages = await Promise.all(
-          normalizedBrands.map(async (brandItem) => {
-            const imageUrl = await getAuthorizedImageObjectUrl(brandItem.imageUrl);
-
-            if (imageUrl?.startsWith("blob:")) {
-              objectUrls.push(imageUrl);
-            }
-
-            return {
-              ...brandItem,
-              imageUrl,
-            };
-          })
-        );
-
         if (!isMounted) {
-          objectUrls.forEach((url) => URL.revokeObjectURL(url));
           return;
         }
 
-        setBrands(brandsWithImages);
+        setBrands(normalizedBrands);
         setMenus(menuData);
       } catch {
         if (isMounted) {
@@ -73,7 +57,6 @@ function RecordBrandPage() {
 
     return () => {
       isMounted = false;
-      objectUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);
 
@@ -180,10 +163,26 @@ function normalizeBrands(data: MenuBrand[]): BrandCard[] {
     .map((item) => {
       return {
         brand: item.brand,
-        imageUrl: item.imageUrl || item.brandImageUrl || item.logoUrl,
+        imageUrl: getImageUrl(item.imageUrl || item.brandImageUrl || item.logoUrl),
       };
     })
     .filter((item) => item.brand);
+}
+
+function getImageUrl(imageUrl?: string | null) {
+  if (!imageUrl) {
+    return "";
+  }
+
+  if (
+    imageUrl.startsWith("http://") ||
+    imageUrl.startsWith("https://") ||
+    imageUrl.startsWith("blob:")
+  ) {
+    return imageUrl;
+  }
+
+  return `${BASE_URL}${imageUrl.startsWith("/") ? imageUrl : `/${imageUrl}`}`;
 }
 
 function getBrandDisplayName(brand: string) {
