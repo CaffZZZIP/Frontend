@@ -1,4 +1,4 @@
-
+// 메뉴 브랜드 선택 페이지
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
@@ -60,7 +60,7 @@ function RecordBrandPage() {
         setMenus(menuData);
       } catch {
         if (isMounted) {
-          setErrorMessage("브랜드 목록을 불러오지 못했어");
+          setErrorMessage("브랜드 목록을 불러오지 못 했어요.");
         }
       } finally {
         if (isMounted) {

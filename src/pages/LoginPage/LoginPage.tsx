@@ -1,3 +1,4 @@
+// 로그인 페이지
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
 import logoImage from "../../assets/caffzzzzip_logo1.png";
 import "./LoginPage.css";

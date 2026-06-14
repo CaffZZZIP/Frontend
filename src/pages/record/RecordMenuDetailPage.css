@@ -92,9 +92,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
 .record-detail-info-card__amount {
+  min-width: 0;
   display: flex;
   align-items: baseline;
   gap: 7px;
@@ -114,6 +116,13 @@
   font-weight: 700;
 }
 
+.record-detail-info-card__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
 .record-detail-info-card__badge {
   height: 27px;
   padding: 0 10px;
@@ -123,6 +132,7 @@
   font-size: 12px;
   font-weight: 900;
   letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
 .record-detail-info-card__badge--safe {
@@ -140,6 +150,34 @@
   color: #c2503f;
 }
 
+.record-detail-info-card__favorite-button {
+  width: 31px;
+  height: 31px;
+  padding: 0;
+  border: 1px solid #e2c9b4;
+  border-radius: 50%;
+  background: #ffffff;
+  color: #b68d5d;
+  font-size: 21px;
+  font-weight: 900;
+  line-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.record-detail-info-card__favorite-button--active {
+  border-color: #eaa1af;
+  background: #fff0f3;
+  color: #e25d75;
+}
+
+.record-detail-info-card__favorite-button:disabled {
+  opacity: 0.65;
+  cursor: default;
+}
+
 .record-detail-info-card__progress {
   width: 100%;
   height: 19px;
@@ -155,6 +193,22 @@
   background: #43c99a;
   display: block;
   transition: width 0.2s ease;
+}
+
+.record-detail-info-card__progress--warning {
+  background: #fff5d9;
+}
+
+.record-detail-info-card__progress--warning span {
+  background: #f2b94b;
+}
+
+.record-detail-info-card__progress--danger {
+  background: #ffe8e4;
+}
+
+.record-detail-info-card__progress--danger span {
+  background: #e56a5a;
 }
 
 .record-detail-info-card__summary {

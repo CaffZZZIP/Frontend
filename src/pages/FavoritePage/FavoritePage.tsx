@@ -1,7 +1,12 @@
+// 즐겨찾기 페이지
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
-import { getFavorites, type FavoriteMenu } from "../../api/favoriteApi";
+import {
+  deleteFavorite,
+  getFavorites,
+  type FavoriteMenu,
+} from "../../api/favoriteApi";
 import "./FavoritePage.css";
 
 function FavoritePage() {
@@ -9,6 +14,10 @@ function FavoritePage() {
   const [favorites, setFavorites] = useState<FavoriteMenu[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [openedMenuKey, setOpenedMenuKey] = useState<number | null>(null);
+  const [deletingMenuId, setDeletingMenuId] = useState<number | null>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -43,13 +52,84 @@ function FavoritePage() {
     };
   }, []);
 
+  const getFavoriteKey = (menu: FavoriteMenu) => {
+    return menu.favoriteId || menu.menuId;
+  };
+
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    setTouchStartX(event.touches[0].clientX);
+    setTouchStartY(event.touches[0].clientY);
+  };
+
+  const handleTouchEnd = (
+    event: React.TouchEvent<HTMLDivElement>,
+    menu: FavoriteMenu
+  ) => {
+    if (touchStartX === null || touchStartY === null) {
+      return;
+    }
+
+    const touchEndX = event.changedTouches[0].clientX;
+    const touchEndY = event.changedTouches[0].clientY;
+    const diffX = touchStartX - touchEndX;
+    const diffY = touchStartY - touchEndY;
+    const menuKey = getFavoriteKey(menu);
+
+    if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 35) {
+      if (diffX > 0) {
+        setOpenedMenuKey(menuKey);
+      } else {
+        setOpenedMenuKey(null);
+      }
+    }
+
+    setTouchStartX(null);
+    setTouchStartY(null);
+  };
+
   const handleMenuClick = (menu: FavoriteMenu) => {
+    const menuKey = getFavoriteKey(menu);
+
+    if (openedMenuKey === menuKey) {
+      setOpenedMenuKey(null);
+      return;
+    }
+
     navigate(`/record/brands/${encodeURIComponent(menu.brand)}/menus/${menu.menuId}`, {
       state: {
         brand: menu.brand,
         menu,
       },
     });
+  };
+
+  const handleDeleteClick = async (
+    event: React.MouseEvent<HTMLButtonElement>,
+    menu: FavoriteMenu
+  ) => {
+    event.stopPropagation();
+
+    if (deletingMenuId === menu.menuId) {
+      return;
+    }
+
+    try {
+      setDeletingMenuId(menu.menuId);
+      setErrorMessage("");
+
+      await deleteFavorite(menu.menuId);
+
+      setFavorites((prevFavorites) =>
+        prevFavorites.filter((favorite) => favorite.menuId !== menu.menuId)
+      );
+      setOpenedMenuKey(null);
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "즐겨찾기 삭제에 실패했어"
+      );
+    } finally {
+      setDeletingMenuId(null);
+    }
   };
 
   return (
@@ -79,40 +159,61 @@ function FavoritePage() {
 
         {!loading && !errorMessage && favorites.length > 0 && (
           <div className="favorite-page__list" aria-label="즐겨찾기 메뉴 목록">
-            {favorites.map((menu) => (
-              <button
-                key={menu.favoriteId || menu.menuId}
-                type="button"
-                className="favorite-menu-card"
-                onClick={() => handleMenuClick(menu)}
-              >
-                <span className="favorite-menu-card__image-wrap">
-                  {menu.imageUrl || menu.menuImageUrl ? (
-                    <img
-                      src={menu.imageUrl || menu.menuImageUrl}
-                      alt=""
-                      className="favorite-menu-card__image"
-                    />
-                  ) : (
-                    <span className="favorite-menu-card__fallback">
-                      {getMenuEmoji(menu)}
+            {favorites.map((menu) => {
+              const menuKey = getFavoriteKey(menu);
+              const isOpened = openedMenuKey === menuKey;
+              const isDeleting = deletingMenuId === menu.menuId;
+
+              return (
+                <div
+                  key={menuKey}
+                  className={`favorite-menu-row${isOpened ? " favorite-menu-row--opened" : ""}`}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={(event) => handleTouchEnd(event, menu)}
+                >
+                  <button
+                    type="button"
+                    className="favorite-menu-row__delete"
+                    onClick={(event) => handleDeleteClick(event, menu)}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? "삭제중" : "삭제"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="favorite-menu-card"
+                    onClick={() => handleMenuClick(menu)}
+                  >
+                    <span className="favorite-menu-card__image-wrap">
+                      {menu.imageUrl || menu.menuImageUrl ? (
+                        <img
+                          src={menu.imageUrl || menu.menuImageUrl}
+                          alt=""
+                          className="favorite-menu-card__image"
+                        />
+                      ) : (
+                        <span className="favorite-menu-card__fallback">
+                          {getMenuEmoji(menu)}
+                        </span>
+                      )}
                     </span>
-                  )}
-                </span>
 
-                <span className="favorite-menu-card__content">
-                  <span className="favorite-menu-card__name">{menu.menuName}</span>
-                  <span className="favorite-menu-card__category">
-                    {menu.brand} · {menu.categoryName}
-                  </span>
-                </span>
+                    <span className="favorite-menu-card__content">
+                      <span className="favorite-menu-card__name">{menu.menuName}</span>
+                      <span className="favorite-menu-card__category">
+                        {menu.brand} · {menu.categoryName}
+                      </span>
+                    </span>
 
-                <span className="favorite-menu-card__caffeine">
-                  <strong>{menu.caffeineMg}</strong>
-                  <span>mg</span>
-                </span>
-              </button>
-            ))}
+                    <span className="favorite-menu-card__caffeine">
+                      <strong>{menu.caffeineMg}</strong>
+                      <span>mg</span>
+                    </span>
+                  </button>
+                </div>
+              );
+            })}
           </div>
         )}
       </section>

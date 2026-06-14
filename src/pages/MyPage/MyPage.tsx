@@ -1,3 +1,4 @@
+// 마이페이지 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
@@ -44,7 +45,6 @@ function MyPage() {
 
   const nickname = routine?.nickname || weeklyStats?.nickname || "사용자";
   const sensitivity = routine?.sensitivity || weeklyStats?.sensitivity || "";
-  const routineName = routine?.weekdayRoutineName || weeklyStats?.routineType || "평소 루틴";
   const maxCaffeine = Math.max(...stats.map((item) => item.totalCaffeine), 100);
   const avatarEmoji = getUserEmoji(nickname);
 
@@ -141,7 +141,7 @@ function MyPage() {
             <div className="my-profile-card__text">
               <strong className="my-profile-card__name">{nickname}</strong>
               <p className="my-profile-card__desc">
-                카페인 민감도 {formatSensitivity(sensitivity)} · {routineName}
+                카페인 민감도 {formatSensitivity(sensitivity)}
               </p>
             </div>
 

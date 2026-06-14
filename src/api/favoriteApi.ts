@@ -1,3 +1,4 @@
+// 줄겨찾기 api
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 type ApiResponse<T> = {
@@ -20,7 +21,9 @@ export type FavoriteMenu = {
 const getAccessToken = () => {
   return (
     localStorage.getItem("accessToken") ||
+    localStorage.getItem("ACCESS_TOKEN") ||
     sessionStorage.getItem("accessToken") ||
+    sessionStorage.getItem("ACCESS_TOKEN") ||
     localStorage.getItem("token") ||
     sessionStorage.getItem("token") ||
     ""

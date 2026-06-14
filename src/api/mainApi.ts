@@ -1,3 +1,4 @@
+// 홈 페이지 api
 export type RoutineType = "WEEKDAY" | "WEEKEND";
 
 export interface MainRoutineResponse {

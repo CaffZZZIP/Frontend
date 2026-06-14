@@ -1,8 +1,11 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
+// 메뉴 선택 1~3페이지 api
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 type ApiResponse<T> = {
-  code: number;
-  message: string;
+  code?: number;
+  status?: number;
+  success?: boolean;
+  message?: string;
   data: T;
 };
 
@@ -26,25 +29,46 @@ export type MenuItem = {
 };
 
 export type MenuDetail = MenuItem & {
+  quantity?: number;
+  intakeCaffeine?: number;
+  intakeCaffeineMg?: number;
+  todayTotalCaffeine?: number;
   todayTotalCaffeineMg?: number;
   todayCaffeineMg?: number;
   currentTotalCaffeineMg?: number;
+  totalCaffeineMg?: number;
+  expectedTotalCaffeine?: number;
+  expectedTotalCaffeineMg?: number;
+  dailyRecommendedLimit?: number;
   dailyLimitMg?: number;
   dailyRecommendedCaffeineMg?: number;
   recommendedCaffeineMg?: number;
+  recommendedDailyCaffeineMg?: number;
+  maxCaffeineMg?: number;
   riskLevel?: string;
+  riskLabel?: string;
   riskType?: string;
   status?: string;
+  caffeineSensitivity?: string;
+  expectedRemainingCaffeine?: number;
   riskMessage?: string;
   analysisMessage?: string;
   guideMessage?: string;
   description?: string;
+  isFavorite?: boolean;
+  favorite?: boolean;
+  favorited?: boolean;
   [key: string]: unknown;
+};
+
+export type GetMenuDetailParams = {
+  intakeAt?: string;
+  quantity?: number;
 };
 
 export type IntakeRequest = {
   menuId: number;
-  intakeAt?: string;
+  intakeAt: string;
   quantity: number;
 };
 
@@ -62,8 +86,11 @@ export type IntakeResponse = {
 function getAccessToken() {
   return (
     localStorage.getItem("accessToken") ||
+    localStorage.getItem("ACCESS_TOKEN") ||
     localStorage.getItem("token") ||
     sessionStorage.getItem("accessToken") ||
+    sessionStorage.getItem("ACCESS_TOKEN") ||
+    sessionStorage.getItem("token") ||
     ""
   );
 }
@@ -152,7 +179,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const text = await response.text();
   const result = text ? (JSON.parse(text) as ApiResponse<T>) : ({ data: undefined } as ApiResponse<T>);
 
-  if (!response.ok) {
+  if (!response.ok || result.success === false) {
     throw new Error(result.message || "요청에 실패했어요.");
   }
 
@@ -194,13 +221,29 @@ export async function getMenusByCategory(categoryId: number) {
   return request<MenuItem[]>(`/api/menus/category/${categoryId}`);
 }
 
-export async function getMenuDetail(menuId: number) {
-  return request<MenuDetail>(`/api/menus/${menuId}`);
+export async function getMenuDetail(menuId: number, params?: GetMenuDetailParams) {
+  const searchParams = new URLSearchParams();
+
+  if (params?.intakeAt) {
+    searchParams.set("intakeAt", params.intakeAt);
+  }
+
+  if (params?.quantity !== undefined) {
+    searchParams.set("quantity", String(params.quantity));
+  }
+
+  const query = searchParams.toString();
+
+  return request<MenuDetail>(query ? `/api/menus/${menuId}?${query}` : `/api/menus/${menuId}`);
 }
 
 export async function createIntake(payload: IntakeRequest) {
   return request<IntakeResponse>("/api/intake", {
     method: "POST",
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      menuId: payload.menuId,
+      intakeAt: payload.intakeAt,
+      quantity: payload.quantity,
+    }),
   });
 }

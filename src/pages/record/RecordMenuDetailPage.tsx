@@ -1,9 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+// 메뉴 상세 기록 페이지
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
+import { addFavorite, deleteFavorite, getFavorites } from "../../api/favoriteApi";
 import {
   createIntake,
   getMenuDetail,
+  resolveMenuImageUrl,
   type MenuDetail,
   type MenuItem,
 } from "../../api/menuApi";
@@ -25,63 +28,146 @@ function RecordMenuDetailPage() {
   const state = location.state as RouteState | null;
   const brand = state?.brand || decodeUrlValue(brandParam || "");
   const menuId = Number(menuIdParam);
+  const isValidMenuId = Number.isFinite(menuId) && menuId > 0;
 
   const initialTime = useMemo(() => getNowTime(), []);
-  const [menu, setMenu] = useState<MenuDetail | null>((state?.menu as MenuDetail) || null);
+  const initialMenu = (state?.menu as MenuDetail) || null;
+  const menuRef = useRef<MenuDetail | null>(initialMenu);
+  const detailRequestSeq = useRef(0);
+
+  const [menu, setMenu] = useState<MenuDetail | null>(initialMenu);
   const [hour, setHour] = useState(initialTime.hour);
   const [minute, setMinute] = useState(initialTime.minute);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(!state?.menu);
+  const [loading, setLoading] = useState(!initialMenu);
   const [saving, setSaving] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  const intakeAt = useMemo(() => buildLocalDateTime(hour, minute), [hour, minute]);
+
+  useEffect(() => {
+    menuRef.current = menu;
+  }, [menu]);
+
+  useEffect(() => {
+    const loadFavorite = async () => {
+      if (!isValidMenuId) {
+        return;
+      }
+
+      try {
+        const favorites = await getFavorites();
+        setIsFavorite(favorites.some((favorite) => Number(favorite.menuId) === menuId));
+      } catch {
+        const detailFavorite = getBooleanValue(menuRef.current, ["isFavorite", "favorite", "favorited"]);
+
+        if (detailFavorite !== undefined) {
+          setIsFavorite(detailFavorite);
+        }
+      }
+    };
+
+    loadFavorite();
+  }, [isValidMenuId, menuId]);
 
   useEffect(() => {
     const loadMenuDetail = async () => {
-      if (!menuId) {
+      if (!isValidMenuId) {
         setErrorMessage("메뉴 정보가 올바르지 않아요.");
         setLoading(false);
         return;
       }
 
+      if (hour.length !== 2 || minute.length !== 2) {
+        return;
+      }
+
+      const requestSeq = detailRequestSeq.current + 1;
+      detailRequestSeq.current = requestSeq;
+
       try {
-        setLoading(true);
+        if (!menuRef.current) {
+          setLoading(true);
+        }
+
         setErrorMessage("");
 
-        const data = await getMenuDetail(menuId);
+        const data = await getMenuDetail(menuId, {
+          intakeAt,
+          quantity,
+        });
+
+        if (detailRequestSeq.current !== requestSeq) {
+          return;
+        }
+
+        menuRef.current = data;
         setMenu(data);
-      } catch {
-        if (!state?.menu) {
+
+        const detailFavorite = getBooleanValue(data, ["isFavorite", "favorite", "favorited"]);
+
+        if (detailFavorite !== undefined) {
+          setIsFavorite(detailFavorite);
+        }
+      } catch (error) {
+        if (detailRequestSeq.current !== requestSeq) {
+          return;
+        }
+
+        if (!menuRef.current) {
           setErrorMessage("메뉴 상세 정보를 불러오지 못했어요.");
+        } else {
+          setErrorMessage(error instanceof Error ? error.message : "카페인 정보를 다시 계산하지 못했어요.");
         }
       } finally {
-        setLoading(false);
+        if (detailRequestSeq.current === requestSeq) {
+          setLoading(false);
+        }
       }
     };
 
     loadMenuDetail();
-  }, [menuId, state?.menu]);
+  }, [isValidMenuId, menuId, intakeAt, hour, minute, quantity]);
 
-  const caffeineMg = getNumberValue(menu, ["caffeineMg"]) || 0;
-  const dailyLimit = getNumberValue(menu, [
-    "dailyLimitMg",
-    "dailyRecommendedCaffeineMg",
-    "recommendedCaffeineMg",
-    "recommendedDailyCaffeineMg",
-    "maxCaffeineMg",
-  ]) || 400;
+  const caffeineMg = getNumberValue(menu, ["caffeineMg"]) ?? 0;
 
-  const baseTotalCaffeine = getNumberValue(menu, [
-    "todayTotalCaffeineMg",
-    "todayCaffeineMg",
-    "currentTotalCaffeineMg",
-    "totalCaffeineMg",
-  ]);
+  const intakeCaffeine =
+    getNumberValue(menu, ["intakeCaffeine", "intakeCaffeineMg", "selectedCaffeineMg"]) ??
+    caffeineMg * quantity;
 
-  const totalCaffeine = Math.max(0, (baseTotalCaffeine || caffeineMg) + caffeineMg * (quantity - 1));
-  const progressRate = dailyLimit > 0 ? Math.min(totalCaffeine / dailyLimit, 1) : 0;
+  const todayTotalCaffeine =
+    getNumberValue(menu, [
+      "todayTotalCaffeine",
+      "todayTotalCaffeineMg",
+      "todayCaffeineMg",
+      "currentTotalCaffeineMg",
+      "totalCaffeineMg",
+    ]) ?? 0;
+
+  const expectedTotalCaffeine = Math.max(
+    0,
+    getNumberValue(menu, ["expectedTotalCaffeine", "expectedTotalCaffeineMg"]) ??
+      todayTotalCaffeine + intakeCaffeine
+  );
+
+  const dailyLimit =
+    getNumberValue(menu, [
+      "dailyRecommendedLimit",
+      "dailyLimitMg",
+      "dailyRecommendedCaffeineMg",
+      "recommendedCaffeineMg",
+      "recommendedDailyCaffeineMg",
+      "maxCaffeineMg",
+    ]) ?? 400;
+
+  const progressRate = dailyLimit > 0 ? Math.min(expectedTotalCaffeine / dailyLimit, 1) : 0;
   const risk = getRiskInfo(menu, progressRate);
+  const menuImageUrl = menu ? resolveMenuImageUrl(menu.imageUrl || menu.menuImageUrl) : undefined;
+
   const analysisMessage =
-    getStringValue(menu, ["analysisMessage", "riskMessage", "guideMessage", "description", "message"]) ||
+    getStringValue(menu, ["guideMessage", "analysisMessage", "riskMessage", "description", "message"]) ||
     `💡 이 음료의 카페인은 약 ${caffeineMg}mg이에요. 늦은 시간에 마셨다면 오늘 수면에 영향을 줄 수 있어요.`;
 
   const handleHourChange = (value: string) => {
@@ -92,8 +178,33 @@ function RecordMenuDetailPage() {
     setMinute(value.replace(/\D/g, "").slice(0, 2));
   };
 
+  const handleFavoriteToggle = async () => {
+    if (!isValidMenuId || favoriteLoading) {
+      return;
+    }
+
+    const nextFavorite = !isFavorite;
+
+    try {
+      setFavoriteLoading(true);
+      setErrorMessage("");
+      setIsFavorite(nextFavorite);
+
+      if (nextFavorite) {
+        await addFavorite(menuId);
+      } else {
+        await deleteFavorite(menuId);
+      }
+    } catch (error) {
+      setIsFavorite(!nextFavorite);
+      setErrorMessage(error instanceof Error ? error.message : "즐겨찾기 변경에 실패했어요.");
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!menu || !menuId || saving) {
+    if (!menu || !isValidMenuId || saving) {
       return;
     }
 
@@ -138,12 +249,8 @@ function RecordMenuDetailPage() {
         <>
           <section className="record-detail-menu-card">
             <span className="record-detail-menu-card__image-wrap">
-              {menu.imageUrl || menu.menuImageUrl ? (
-                <img
-                  src={menu.imageUrl || menu.menuImageUrl}
-                  alt=""
-                  className="record-detail-menu-card__image"
-                />
+              {menuImageUrl ? (
+                <img src={menuImageUrl} alt="" className="record-detail-menu-card__image" />
               ) : (
                 <span className="record-detail-menu-card__fallback">{getMenuEmoji(menu)}</span>
               )}
@@ -166,19 +273,37 @@ function RecordMenuDetailPage() {
                 <span>mg</span>
               </div>
 
-              <span className={`record-detail-info-card__badge record-detail-info-card__badge--${risk.type}`}>
-                {risk.label}
-              </span>
+              <div className="record-detail-info-card__actions">
+                <span
+                  className={`record-detail-info-card__badge record-detail-info-card__badge--${risk.type}`}
+                >
+                  {risk.label}
+                </span>
+
+                <button
+                  type="button"
+                  className={`record-detail-info-card__favorite-button${
+                    isFavorite ? " record-detail-info-card__favorite-button--active" : ""
+                  }`}
+                  onClick={handleFavoriteToggle}
+                  disabled={favoriteLoading}
+                  aria-label={isFavorite ? "즐겨찾기 해제" : "즐겨찾기 추가"}
+                >
+                  {isFavorite ? "♥" : "♡"}
+                </button>
+              </div>
             </div>
 
-            <div className="record-detail-info-card__progress">
+            <div
+              className={`record-detail-info-card__progress record-detail-info-card__progress--${risk.type}`}
+            >
               <span style={{ width: `${progressRate * 100}%` }} />
             </div>
 
             <div className="record-detail-info-card__summary">
-              <strong>금일 섭취량</strong>
+              <strong>예상 총 섭취량</strong>
               <span>
-                {Math.round(totalCaffeine)}mg / {dailyLimit}mg
+                {Math.round(expectedTotalCaffeine)}mg / {dailyLimit}mg
               </span>
             </div>
 
@@ -335,34 +460,112 @@ function getStringValue(source: MenuDetail | null, keys: string[]) {
   return "";
 }
 
+function getBooleanValue(source: MenuDetail | null, keys: string[]) {
+  if (!source) {
+    return undefined;
+  }
+
+  const record = source as Record<string, unknown>;
+
+  for (const key of keys) {
+    const value = record[key];
+
+    if (typeof value === "boolean") {
+      return value;
+    }
+
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+
+      if (normalized === "true") {
+        return true;
+      }
+
+      if (normalized === "false") {
+        return false;
+      }
+    }
+  }
+
+  return undefined;
+}
+
 function getRiskInfo(menu: MenuDetail | null, progressRate: number) {
-  const riskText = getStringValue(menu, ["riskLevel", "riskType", "status"]).toLowerCase();
+  const riskText = getStringValue(menu, ["riskLevel", "riskType", "status", "riskLabel"]).toLowerCase();
+  const riskLabel = getStringValue(menu, ["riskLabel"]);
 
-  if (riskText.includes("danger") || riskText.includes("high") || riskText.includes("위험")) {
-    return { label: "🚨 위험", type: "danger" };
+  if (
+    riskText.includes("danger") ||
+    riskText.includes("high") ||
+    riskText.includes("위험") ||
+    riskText.includes("dangerous")
+  ) {
+    return { label: formatRiskLabel(riskLabel, "danger"), type: "danger" };
   }
 
-  if (riskText.includes("warning") || riskText.includes("middle") || riskText.includes("주의")) {
-    return { label: "⚠️ 주의", type: "warning" };
+  if (
+    riskText.includes("warning") ||
+    riskText.includes("caution") ||
+    riskText.includes("middle") ||
+    riskText.includes("mid") ||
+    riskText.includes("주의")
+  ) {
+    return { label: formatRiskLabel(riskLabel, "warning"), type: "warning" };
   }
 
-  if (riskText.includes("safe") || riskText.includes("low") || riskText.includes("안전")) {
-    return { label: "✅ 안전", type: "safe" };
+  if (
+    riskText.includes("safe") ||
+    riskText.includes("low") ||
+    riskText.includes("normal") ||
+    riskText.includes("안전") ||
+    riskText.includes("보통")
+  ) {
+    return { label: formatRiskLabel(riskLabel, "safe"), type: "safe" };
   }
 
   if (progressRate >= 0.8) {
-    return { label: "🚨 위험", type: "danger" };
+    return { label: formatRiskLabel(riskLabel, "danger"), type: "danger" };
   }
 
   if (progressRate >= 0.55) {
-    return { label: "⚠️ 주의", type: "warning" };
+    return { label: formatRiskLabel(riskLabel, "warning"), type: "warning" };
   }
 
-  return { label: "✅ 안전", type: "safe" };
+  return { label: formatRiskLabel(riskLabel, "safe"), type: "safe" };
+}
+
+function formatRiskLabel(label: string, type: "safe" | "warning" | "danger") {
+  const trimmedLabel = label.trim();
+
+  if (!trimmedLabel) {
+    if (type === "danger") {
+      return "🚨 위험";
+    }
+
+    if (type === "warning") {
+      return "⚠️ 주의";
+    }
+
+    return "✅ 안전";
+  }
+
+  if (trimmedLabel.includes("✅") || trimmedLabel.includes("⚠️") || trimmedLabel.includes("🚨")) {
+    return trimmedLabel;
+  }
+
+  if (type === "danger") {
+    return `🚨 ${trimmedLabel}`;
+  }
+
+  if (type === "warning") {
+    return `⚠️ ${trimmedLabel}`;
+  }
+
+  return `✅ ${trimmedLabel}`;
 }
 
 function getMenuEmoji(menu: MenuDetail) {
-  const text = `${menu.menuName} ${menu.categoryName}`.toLowerCase();
+  const text = `${menu.menuName || ""} ${menu.categoryName || ""}`.toLowerCase();
 
   if (text.includes("콜드") || text.includes("아이스") || text.includes("블루")) {
     return "🧊";

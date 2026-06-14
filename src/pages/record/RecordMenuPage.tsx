@@ -1,3 +1,4 @@
+// 메뉴 선택 페이지
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import PageLayout from "../../components/layout/PageLayout/PageLayout";
