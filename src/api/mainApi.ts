@@ -35,7 +35,7 @@ interface ApiResponse<T> {
 }
 
 const BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "http://52.79.54.46:8080"
+  import.meta.env.VITE_API_BASE_URL || ""
 ).replace(/\/$/, "");
 
 const getAccessToken = () => {
