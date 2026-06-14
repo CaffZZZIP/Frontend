@@ -10,7 +10,7 @@ import {
 } from "../../api/menuApi";
 import "./RecordBrandPage.css";
 
-const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://52.79.54.46:8080").replace(/\/$/, "");
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 type BrandCard = {
   brand: string;
