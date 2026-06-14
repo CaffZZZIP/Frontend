@@ -54,7 +54,7 @@ function KakaoCallbackPage() {
 
     if (error) {
       clearLoginStorage();
-      setMessage("카카오 로그인에 실패했어.");
+      setMessage("카카오 로그인에 실패했어요.");
 
       window.setTimeout(() => {
         navigate("/login", { replace: true });
@@ -65,7 +65,7 @@ function KakaoCallbackPage() {
 
     if (!accessToken) {
       clearLoginStorage();
-      setMessage("로그인 토큰을 받지 못했어.");
+      setMessage("로그인 토큰을 받지 못했어요.");
 
       window.setTimeout(() => {
         navigate("/login", { replace: true });

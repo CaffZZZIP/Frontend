@@ -35,7 +35,7 @@ function FavoritePage() {
       } catch (error) {
         if (isMounted) {
           setErrorMessage(
-            error instanceof Error ? error.message : "즐겨찾기 목록을 불러오지 못했어"
+            error instanceof Error ? error.message : "즐겨찾기 목록을 불러오지 못했어요."
           );
         }
       } finally {
@@ -125,7 +125,7 @@ function FavoritePage() {
       setOpenedMenuKey(null);
     } catch (error) {
       setErrorMessage(
-        error instanceof Error ? error.message : "즐겨찾기 삭제에 실패했어"
+        error instanceof Error ? error.message : "즐겨찾기 삭제에 실패했어요."
       );
     } finally {
       setDeletingMenuId(null);
@@ -145,7 +145,7 @@ function FavoritePage() {
       <section className="favorite-page__section">
         <h2 className="favorite-page__section-title">즐겨찾기 메뉴</h2>
 
-        {loading && <p className="favorite-page__message">즐겨찾기 메뉴를 불러오는 중이야</p>}
+        {loading && <p className="favorite-page__message">즐겨찾기 메뉴를 불러오는 중이에요.</p>}
 
         {!loading && errorMessage && (
           <p className="favorite-page__message favorite-page__message--error">
@@ -154,7 +154,7 @@ function FavoritePage() {
         )}
 
         {!loading && !errorMessage && favorites.length === 0 && (
-          <p className="favorite-page__message">아직 즐겨찾기한 메뉴가 없어</p>
+          <p className="favorite-page__message">아직 즐겨찾기한 메뉴가 없어요.</p>
         )}
 
         {!loading && !errorMessage && favorites.length > 0 && (
