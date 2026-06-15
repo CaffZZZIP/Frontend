@@ -22,13 +22,13 @@ type WeekDayInfo = {
 const DAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 const DEFAULT_STATS: WeeklyStatistic[] = [
-  { dayOfWeek: "MONDAY", totalCaffeine: 0, riskLevel: "SAFE" },
   { dayOfWeek: "TUESDAY", totalCaffeine: 0, riskLevel: "SAFE" },
   { dayOfWeek: "WEDNESDAY", totalCaffeine: 0, riskLevel: "SAFE" },
   { dayOfWeek: "THURSDAY", totalCaffeine: 0, riskLevel: "SAFE" },
   { dayOfWeek: "FRIDAY", totalCaffeine: 0, riskLevel: "SAFE" },
   { dayOfWeek: "SATURDAY", totalCaffeine: 0, riskLevel: "SAFE" },
   { dayOfWeek: "SUNDAY", totalCaffeine: 0, riskLevel: "SAFE" },
+  { dayOfWeek: "MONDAY", totalCaffeine: 0, riskLevel: "SAFE" },
 ];
 
 function MyPage() {
@@ -38,7 +38,7 @@ function MyPage() {
   const [weeklyStats, setWeeklyStats] = useState<WeeklyStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const weekDays = useMemo(() => getCurrentWeekDays(), []);
+  const weekDays = useMemo(() => getRecentSevenDays(), []);
   const stats = weeklyStats?.weeklyStatistics?.length
     ? weeklyStats.weeklyStatistics
     : DEFAULT_STATS;
@@ -155,7 +155,7 @@ function MyPage() {
           <section className="my-stat-card">
             <div className="my-stat-card__header">
               <h2>이번 주 카페인 통계</h2>
-              <p>월요일-일요일 · 하루 총 섭취량</p>
+              <p>최근 7일 · 하루 총 섭취량</p>
             </div>
 
             <div className="my-chart">
@@ -176,7 +176,7 @@ function MyPage() {
                   );
 
                   return (
-                    <div className="my-chart__item" key={day.key}>
+                    <div className="my-chart__item" key={`${day.key}-${day.dateLabel}`}>
                       <div className="my-chart__bar-wrap">
                         <div
                           className={`my-chart__bar my-chart__bar--${getRiskClassName(riskLevel)}`}
@@ -243,31 +243,18 @@ function MyPage() {
   );
 }
 
-function getCurrentWeekDays(): WeekDayInfo[] {
+function getRecentSevenDays(): WeekDayInfo[] {
   const today = new Date();
-  const currentDay = today.getDay();
-  const mondayDiff = currentDay === 0 ? -6 : 1 - currentDay;
+  today.setHours(0, 0, 0, 0);
 
-  const monday = new Date(today);
-  monday.setDate(today.getDate() + mondayDiff);
-
-  const keys = [
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-    "SUNDAY",
-  ];
-
-  return keys.map((key, index) => {
-    const date = new Date(monday);
-    date.setDate(monday.getDate() + index);
+  return Array.from({ length: 7 }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (6 - index));
 
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const day = String(date.getDate()).padStart(2, "0");
     const label = DAY_LABELS[date.getDay()];
+    const key = getDayKey(date.getDay());
 
     return {
       key,
@@ -275,6 +262,16 @@ function getCurrentWeekDays(): WeekDayInfo[] {
       dateLabel: `${month}/${day} ${label}`,
     };
   });
+}
+
+function getDayKey(dayIndex: number) {
+  if (dayIndex === 0) return "SUNDAY";
+  if (dayIndex === 1) return "MONDAY";
+  if (dayIndex === 2) return "TUESDAY";
+  if (dayIndex === 3) return "WEDNESDAY";
+  if (dayIndex === 4) return "THURSDAY";
+  if (dayIndex === 5) return "FRIDAY";
+  return "SATURDAY";
 }
 
 function findStatByDay(stats: WeeklyStatistic[], dayKey: string) {

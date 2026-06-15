@@ -1,5 +1,5 @@
 // 온보딩 루틴 저장 api
-const BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "");
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
 export type CaffeineSensitivity = "LOW" | "NORMAL" | "HIGH";
 
@@ -19,9 +19,11 @@ export interface RoutineRequest {
 const getAccessToken = () => {
   return (
     localStorage.getItem("accessToken") ||
+    localStorage.getItem("ACCESS_TOKEN") ||
     localStorage.getItem("token") ||
     localStorage.getItem("access_token") ||
     sessionStorage.getItem("accessToken") ||
+    sessionStorage.getItem("ACCESS_TOKEN") ||
     sessionStorage.getItem("token") ||
     sessionStorage.getItem("access_token") ||
     ""
@@ -37,19 +39,19 @@ const getAuthHeader = (token: string) => {
 };
 
 const getErrorMessage = async (response: Response) => {
-  const contentType = response.headers.get("content-type") || "";
-
-  if (contentType.includes("application/json")) {
-    const data = await response.json().catch(() => null);
-
-    if (data && typeof data.message === "string") {
-      return data.message;
-    }
-  }
-
   const text = await response.text().catch(() => "");
 
   if (text) {
+    try {
+      const data = JSON.parse(text);
+
+      if (data && typeof data.message === "string") {
+        return data.message;
+      }
+    } catch {
+      return text;
+    }
+
     return text;
   }
 
@@ -57,10 +59,6 @@ const getErrorMessage = async (response: Response) => {
 };
 
 export const saveRoutine = async (body: RoutineRequest) => {
-  if (!BASE_URL) {
-    throw new Error("VITE_API_BASE_URL이 설정되지 않았어요.");
-  }
-
   const accessToken = getAccessToken();
 
   if (!accessToken) {
@@ -80,11 +78,15 @@ export const saveRoutine = async (body: RoutineRequest) => {
     throw new Error(await getErrorMessage(response));
   }
 
-  const contentType = response.headers.get("content-type") || "";
+  const text = await response.text().catch(() => "");
 
-  if (contentType.includes("application/json")) {
-    return response.json();
+  if (!text) {
+    return null;
   }
 
-  return null;
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
 };
