@@ -568,7 +568,7 @@ function getMenuEmoji(menu: MenuDetail) {
   const text = `${menu.menuName || ""} ${menu.categoryName || ""}`.toLowerCase();
 
 
-    if (text.includes("콜드브루")) {
+  if (text.includes("콜드브루")) {
     return "☕";
   }
 

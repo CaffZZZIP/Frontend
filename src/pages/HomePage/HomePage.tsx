@@ -324,10 +324,7 @@ function HomePage() {
 
                   <div className="home-intake__info">
                     <strong>{item.menuName}</strong>
-                    <span>
-                      {formatIntakeTime(item.intakeTime)}
-                      {item.brand ? ` · ${item.brand}` : ""}
-                    </span>
+                    <span>{formatIntakeMeta(item)}</span>
                   </div>
 
                   <b>{formatMg(item.caffeineMg)}</b>
@@ -534,46 +531,22 @@ function formatTime(value?: string) {
   return `${time.hour}:${time.minute}`;
 }
 
+function formatIntakeMeta(item: IntakePreviewItem) {
+  const time = formatIntakeTime(item.intakeTime);
+  const quantity = Number(item.quantity || 0);
+  const parts = [time, item.brand, quantity > 0 ? `${quantity}잔` : ""].filter(Boolean);
+
+  return parts.length > 0 ? parts.join(" · ") : "기록 정보 없음";
+}
+
 function formatIntakeTime(value?: string) {
   const time = extractTimeParts(value);
 
   if (!time) {
-    return "--:--";
+    return "";
   }
 
-  let hourNumber = Number(time.hour);
-  const meridiem = getMeridiem(value);
-
-  if (meridiem === "PM" && hourNumber < 12) {
-    hourNumber += 12;
-  }
-
-  if (meridiem === "AM" && hourNumber === 12) {
-    hourNumber = 0;
-  }
-
-  const period = hourNumber < 12 ? "오전" : "오후";
-  const displayHour = hourNumber % 12 === 0 ? 12 : hourNumber % 12;
-
-  return `${period} ${String(displayHour).padStart(2, "0")}:${time.minute}`;
-}
-
-function getMeridiem(value?: string) {
-  if (!value) {
-    return null;
-  }
-
-  const text = value.trim().toLowerCase();
-
-  if (text.includes("오후") || text.includes("pm")) {
-    return "PM";
-  }
-
-  if (text.includes("오전") || text.includes("am")) {
-    return "AM";
-  }
-
-  return null;
+  return `${time.hour}:${time.minute}`;
 }
 
 function extractTimeParts(value?: string) {
@@ -637,21 +610,78 @@ function getRiskInfo(level?: string) {
 function getDrinkIcon(menuName: string, brand: string) {
   const text = `${menuName} ${brand}`.toLowerCase();
 
-  if (text.includes("tea") || text.includes("티") || text.includes("차")) {
+if (text.includes("콜드브루")) {
+    return "☕";
+  }
+
+  if (text.includes("빙수")) {
+    return "🍧";
+  }
+
+  if (text.includes("버블") || text.includes("펄")) {
+    return "🧋";
+  }
+
+  if (text.includes("아이스티") || text.includes("에이드") || text.includes("주스") || text.includes("스무디") || text.includes("블렌디드")) {
+    return "🍹";
+  }
+
+  if (text.includes("말차") || text.includes("티") || text.includes("차")) {
     return "🍵";
   }
 
-  if (text.includes("에너지") || text.includes("energy")) {
+  if (text.includes("모카") || text.includes("초코") || text.includes("초콜릿")) {
+    return "🍫";
+  }
+
+  if (text.includes("라떼") || text.includes("밀크")) {
+    return "🥛";
+  }
+
+  if (text.includes("크루아상")) {
+    return "🥐";
+  }
+
+  if (text.includes("샌드위치")) {
+      return "🥪";
+    }
+
+  if (text.includes("베이글")) {
+    return "🥯";
+  }
+
+  if (text.includes("쿠키")) {
+      return "🍪";
+  }
+
+  if (text.includes("머핀")) {
+    return "🧁";
+  }
+
+  if (text.includes("디저트") || text.includes("케이크") || text.includes("빵")) {
+    return "🍰";
+  }
+
+  if (text.includes("에너지") || text.includes("몬스터")) {
     return "⚡";
   }
 
-  if (text.includes("콜라") || text.includes("탄산") || text.includes("soda")) {
+  if (text.includes("탄산") || text.includes("콜라") || text.includes("사이다") || text.includes("소다")) {
     return "🥤";
   }
 
-  if (text.includes("초코") || text.includes("choco")) {
-    return "🍫";
+  if (text.includes("주스")) {
+    return "🧃";
   }
+
+  if (text.includes("스무디") || text.includes("쉐이크")) {
+    return "🍹";
+  }
+
+  if (text.includes("아이스")) {
+    return "🧊";
+  }
+
 
   return "☕";
 }

@@ -24,6 +24,7 @@ export interface IntakePreviewItem {
   brand: string;
   caffeineMg: number;
   intakeTime: string;
+  quantity?: number;
 }
 
 interface ApiResponse<T> {
