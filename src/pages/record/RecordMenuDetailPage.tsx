@@ -568,12 +568,20 @@ function getMenuEmoji(menu: MenuDetail) {
   const text = `${menu.menuName || ""} ${menu.categoryName || ""}`.toLowerCase();
 
 
-  if (text.includes("아이스티") || text.includes("에이드") || text.includes("주스") || text.includes("스무디") || text.includes("블렌디드")) {
-    return "🍹";
+    if (text.includes("콜드브루")) {
+    return "☕";
   }
 
-  if (text.includes("콜드") || text.includes("아이스") || text.includes("블루")) {
-    return "🧊";
+  if (text.includes("빙수")) {
+    return "🍧";
+  }
+
+  if (text.includes("버블") || text.includes("펄")) {
+    return "🧋";
+  }
+
+  if (text.includes("아이스티") || text.includes("에이드") || text.includes("주스") || text.includes("스무디") || text.includes("블렌디드")) {
+    return "🍹";
   }
 
   if (text.includes("말차") || text.includes("티") || text.includes("차")) {
@@ -588,6 +596,26 @@ function getMenuEmoji(menu: MenuDetail) {
     return "🥛";
   }
 
+  if (text.includes("크루아상")) {
+    return "🥐";
+  }
+
+  if (text.includes("샌드위치")) {
+      return "🥪";
+    }
+
+  if (text.includes("베이글")) {
+    return "🥯";
+  }
+
+  if (text.includes("쿠키")) {
+      return "🍪";
+  }
+
+  if (text.includes("머핀")) {
+    return "🧁";
+  }
+
   if (text.includes("디저트") || text.includes("케이크") || text.includes("빵")) {
     return "🍰";
   }
@@ -596,9 +624,22 @@ function getMenuEmoji(menu: MenuDetail) {
     return "⚡";
   }
 
-  if (text.includes("탄산") || text.includes("콜라")) {
+  if (text.includes("탄산") || text.includes("콜라") || text.includes("사이다") || text.includes("소다")) {
     return "🥤";
   }
+
+  if (text.includes("주스")) {
+    return "🧃";
+  }
+
+  if (text.includes("스무디") || text.includes("쉐이크")) {
+    return "🍹";
+  }
+
+  if (text.includes("아이스")) {
+    return "🧊";
+  }
+
 
   return "☕";
 }

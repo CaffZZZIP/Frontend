@@ -238,6 +238,10 @@ function getMenuEmoji(menu: MenuItem) {
     return "🧋";
   }
 
+  if (text.includes("아이스티") || text.includes("에이드") || text.includes("주스") || text.includes("스무디") || text.includes("블렌디드")) {
+    return "🍹";
+  }
+
   if (text.includes("말차") || text.includes("티") || text.includes("차")) {
     return "🍵";
   }
