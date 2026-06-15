@@ -567,6 +567,11 @@ function formatRiskLabel(label: string, type: "safe" | "warning" | "danger") {
 function getMenuEmoji(menu: MenuDetail) {
   const text = `${menu.menuName || ""} ${menu.categoryName || ""}`.toLowerCase();
 
+
+  if (text.includes("아이스티") || text.includes("에이드") || text.includes("주스") || text.includes("스무디") || text.includes("블렌디드")) {
+    return "🍹";
+  }
+
   if (text.includes("콜드") || text.includes("아이스") || text.includes("블루")) {
     return "🧊";
   }

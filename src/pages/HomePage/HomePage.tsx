@@ -541,11 +541,39 @@ function formatIntakeTime(value?: string) {
     return "--:--";
   }
 
-  const hourNumber = Number(time.hour);
+  let hourNumber = Number(time.hour);
+  const meridiem = getMeridiem(value);
+
+  if (meridiem === "PM" && hourNumber < 12) {
+    hourNumber += 12;
+  }
+
+  if (meridiem === "AM" && hourNumber === 12) {
+    hourNumber = 0;
+  }
+
   const period = hourNumber < 12 ? "오전" : "오후";
   const displayHour = hourNumber % 12 === 0 ? 12 : hourNumber % 12;
 
   return `${period} ${String(displayHour).padStart(2, "0")}:${time.minute}`;
+}
+
+function getMeridiem(value?: string) {
+  if (!value) {
+    return null;
+  }
+
+  const text = value.trim().toLowerCase();
+
+  if (text.includes("오후") || text.includes("pm")) {
+    return "PM";
+  }
+
+  if (text.includes("오전") || text.includes("am")) {
+    return "AM";
+  }
+
+  return null;
 }
 
 function extractTimeParts(value?: string) {
